@@ -1,0 +1,32 @@
+---
+description: Backend development rules for the Inventory Management API.
+globs:
+alwaysApply: true
+---
+
+## Architecture and Patterns
+- Use **Clean Architecture** structured into Domain, Application, Infrastructure, and API layers.
+- Apply a lightweight **CQRS** approach:
+  - All **Reads (Queries)** must be implemented using **Entity Framework Core**.
+  - All **Writes/Mutations (Commands)** must be implemented using **Dapper** via explicit SQL queries or Stored Procedures for INSERT, UPDATE and DELETE operations.
+- Follow **SOLID**, **Clean Code**, and **TDD** principles in every implementation.
+- Do not inject DbContext into Controllers.
+
+## C# and .NET 10 Conventions
+- Use modern C# 12 / .NET 10 syntax (`primary constructors`, `global usings`, `file-scoped namespaces`).
+- Enable `nullable reference types` and treat warnings as errors in critical code.
+- All asynchronous methods must have the `Async` suffix and accept a `CancellationToken`.
+
+## Unit Testing & TDD
+- Apply **TDD**: Write or define unit tests before implementing the logic.
+- Testing frameworks: `xUnit`, `FluentAssertions`, and `Moq` / `NSubstitute`.
+
+## Docker & Database
+- SQL Server connection configurations must be read exclusively from environment variables or `appsettings.json`.
+- Keep table and column names aligned with the SQL Server schema (Products, Categories, InventoryMovements).
+
+## Application Layer
+- Business rules belong to the Application layer.
+- Controllers should only handle HTTP concerns.
+- Repository interfaces belong to Application.
+- Infrastructure implements repositories.
