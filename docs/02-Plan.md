@@ -10,6 +10,15 @@ The project is divided into incremental milestones to keep development organized
 
 ---
 
+# Note
+
+Every milestone must finish with:
+
+- Build validation.
+- Existing tests passing.
+- Documentation update if required.
+- Code review before starting the next milestone.
+
 # Milestone 1
 
 ## Project Foundation
@@ -26,10 +35,10 @@ The project is divided into incremental milestones to keep development organized
 ## Domain and Infrastructure
 
 - Define domain entities.
+- Create SQL Server database schema.
 - Configure Entity Framework Core.
 - Configure Dapper.
 - Implement repositories.
-- Create SQL Server database schema.
 - Create initial migrations.
 - Configure Docker and SQL Server.
 
@@ -39,11 +48,11 @@ The project is divided into incremental milestones to keep development organized
 
 ## Application Layer
 
-- Implement DTOs.
 - Implement Application Services.
+- Implement DTOs.
+- Implement business rules.
 - Separate read operations (EF Core).
 - Separate write operations (Dapper).
-- Implement business rules.
 
 ---
 
@@ -52,9 +61,9 @@ The project is divided into incremental milestones to keep development organized
 ## REST API and Security
 
 - Implement REST endpoints.
+- Implement exception handling.
 - Configure OAuth2 authentication.
 - Configure Swagger/OpenAPI.
-- Implement exception handling.
 - Seed demo data.
 
 ---
@@ -65,6 +74,7 @@ The project is divided into incremental milestones to keep development organized
 
 - Implement unit tests using xUnit and Moq.
 - Validate application services.
+- Validate Application Services.
 - Configure Docker image.
 - Configure Docker Compose.
 - Validate complete application flow.
