@@ -125,7 +125,7 @@ Unit tests cover Domain entities and Application business rules (xUnit, Moq, Flu
 
 ---
 
-## AI-Assisted Development
+## AI-Assisted Development (Cursor)
 
 This project was developed with the assistance of AI tools as permitted by the technical assessment.
 
@@ -144,6 +144,7 @@ This documentation includes:
 - Cursor Rules
 - Cursor Skills
 - Cursor Plans
+- Cursor Chats
 
 The implementation, validation, debugging, and final technical decisions were performed and verified throughout the development process.
 
