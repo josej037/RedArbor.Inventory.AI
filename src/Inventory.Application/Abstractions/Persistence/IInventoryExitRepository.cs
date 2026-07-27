@@ -11,4 +11,15 @@ public interface IInventoryExitRepository
     Task<int> AddAsync(InventoryExit exit, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    Task<int> CreateWithStockAndMovementAsync(
+        InventoryExit exit,
+        Product product,
+        InventoryMovement movement,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteWithStockAsync(
+        int exitId,
+        Product product,
+        CancellationToken cancellationToken = default);
 }
