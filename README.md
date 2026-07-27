@@ -95,11 +95,31 @@ This API uses **GitHub OAuth2 Authorization Code** only to prove identity, then 
 
 ### GitHub OAuth App setup
 
-1. Create an OAuth App under GitHub → Settings → Developer settings → OAuth Apps.
-2. Set **Authorization callback URL** to match config exactly, e.g. `http://localhost:8080/api/auth/callback` (Compose) or your local API URL.
-3. Copy Client ID / Client Secret into `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`) or `GitHub` in `appsettings.Development.json`.
+This API uses GitHub OAuth2 Authorization Code flow.
 
-OAuth `state` is stored in memory on the API process (fine for single-instance local Docker; not multi-instance).
+The project includes a preconfigured GitHub OAuth application for technical evaluation.
+
+No GitHub OAuth registration is required.
+
+Authentication flow:
+
+1. Open:
+
+   http://localhost:8080/api/auth/login
+
+2. Sign in with GitHub.
+
+3. GitHub redirects to:
+
+   http://localhost:8080/api/auth/callback
+
+4. The API exchanges the GitHub identity for its own JWT token.
+
+5. Use the JWT token in Swagger:
+
+   Authorize → Bearer <token>
+
+Protected endpoints require this JWT.
 
 ### Login flow
 
