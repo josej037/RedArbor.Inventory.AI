@@ -42,7 +42,7 @@ public static class DependencyInjection
 
     private static void ConfigureAuthentication(IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
+        services.Configure<GitHubOptions>(configuration.GetSection(GitHubOptions.SectionName));
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
@@ -61,7 +61,7 @@ public static class DependencyInjection
             throw new InvalidOperationException("Jwt:Key must be at least 32 characters long.");
         }
 
-        services.AddSingleton<IAuthConfiguration, AuthConfiguration>();
+        services.AddHttpClient<IGitHubOAuthClient, GitHubOAuthClient>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
         services

@@ -4,5 +4,7 @@ namespace Inventory.Application.Services.Auth;
 
 public interface IAuthService
 {
-    Task<TokenResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
+    Task<string> GetAuthorizationUrlAsync(CancellationToken cancellationToken = default);
+
+    Task<TokenResponse> CompleteLoginAsync(string code, string state, CancellationToken cancellationToken = default);
 }

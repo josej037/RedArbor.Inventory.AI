@@ -37,8 +37,9 @@ Settings are loaded from `appsettings.json` / `appsettings.Development.json` and
 | `Jwt:Audience` | `Jwt__Audience` | JWT audience |
 | `Jwt:Key` | `Jwt__Key` | Signing key (≥ 32 characters) |
 | `Jwt:ExpirationMinutes` | `Jwt__ExpirationMinutes` | Token lifetime |
-| `Auth:Username` | `Auth__Username` | Demo login username |
-| `Auth:Password` | `Auth__Password` | Demo login password |
+| `GitHub:ClientId` | `GitHub__ClientId` | GitHub OAuth App client ID |
+| `GitHub:ClientSecret` | `GitHub__ClientSecret` | GitHub OAuth App client secret |
+| `GitHub:RedirectUri` | `GitHub__RedirectUri` | Callback URL registered in GitHub |
 
 Development defaults live in `src/Inventory.Api/appsettings.Development.json`.
 
@@ -90,27 +91,30 @@ dotnet ef database update --project src/Inventory.Infrastructure --startup-proje
 
 ## Swagger and authentication
 
-1. Open `/swagger`.
-2. Call `POST /api/auth/login` with the demo credentials.
-3. Click **Authorize** and enter `Bearer <accessToken>` (or paste the token alone if the UI already prefixes Bearer).
+This API uses **GitHub OAuth2 Authorization Code** only to prove identity, then issues its own JWT (existing `JwtTokenGenerator`). Protected endpoints accept **only** that app JWT — not a GitHub access token.
+
+### GitHub OAuth App setup
+
+1. Create an OAuth App under GitHub → Settings → Developer settings → OAuth Apps.
+2. Set **Authorization callback URL** to match config exactly, e.g. `http://localhost:8080/api/auth/callback` (Compose) or your local API URL.
+3. Copy Client ID / Client Secret into `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`) or `GitHub` in `appsettings.Development.json`.
+
+OAuth `state` is stored in memory on the API process (fine for single-instance local Docker; not multi-instance).
+
+### Login flow
+
+1. Open `/swagger` (or browse `GET /api/auth/login`).
+2. Complete GitHub consent; GitHub redirects to `GET /api/auth/callback`.
+3. The callback JSON includes `accessToken` — click **Authorize** in Swagger and paste `Bearer <accessToken>`.
 4. Exercise Categories, Products, Entries, Exits, and Movements.
 
-Protected inventory endpoints return **401** without a token. Business rule violations return **400**; missing resources return **404**.
-
-## Demo credentials
-
-| Field | Value |
-|-------|-------|
-| Username | `demo` |
-| Password | `Demo123!` |
-
-These match Development config and `.env.example`. Change them via `Auth__*` / `Jwt__*` before sharing an environment.
+Protected inventory endpoints return **401** without a token (or with a GitHub token). Business rule violations return **400**; missing resources return **404**.
 
 ## Architecture overview
 
 - **Domain** — inventory entities (Category, Product, Entry, Exit, Movement).
-- **Application** — services and validation (stock rules, delete guards, auth login).
-- **Infrastructure** — SQL Server via EF (reads) and Dapper (writes), JWT generation/validation, demo seed.
+- **Application** — services and validation (stock rules, delete guards, GitHub login orchestration).
+- **Infrastructure** — SQL Server via EF (reads) and Dapper (writes), GitHub OAuth client, JWT generation/validation, demo seed.
 - **API** — REST controllers + global exception handling + Swagger.
 
 See ADRs under `docs/adr/` and the Milestone 5 review in [docs/03-Architecture-Review.md](docs/03-Architecture-Review.md). AI-oriented project notes: [docs/README_AI.md](docs/README_AI.md).

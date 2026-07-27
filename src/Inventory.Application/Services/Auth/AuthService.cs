@@ -5,34 +5,31 @@ using Inventory.Application.Exceptions;
 namespace Inventory.Application.Services.Auth;
 
 public class AuthService(
-    IAuthConfiguration authConfiguration,
+    IGitHubOAuthClient gitHubOAuthClient,
     IJwtTokenGenerator jwtTokenGenerator) : IAuthService
 {
-    public Task<TokenResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public Task<string> GetAuthorizationUrlAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(gitHubOAuthClient.CreateAuthorizationUrl());
+    }
 
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+    public async Task<TokenResponse> CompleteLoginAsync(
+        string code,
+        string state,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(state))
         {
-            throw new BusinessException("Username and password are required.");
+            throw new BusinessException("Authorization code and state are required.");
         }
 
-        var usernameMatches = string.Equals(
-            request.Username.Trim(),
-            authConfiguration.Username,
-            StringComparison.Ordinal);
-
-        var passwordMatches = string.Equals(
-            request.Password,
-            authConfiguration.Password,
-            StringComparison.Ordinal);
-
-        if (!usernameMatches || !passwordMatches)
+        var githubLogin = await gitHubOAuthClient.AuthenticateAsync(code, state, cancellationToken);
+        if (string.IsNullOrWhiteSpace(githubLogin))
         {
-            throw new BusinessException("Invalid username or password.");
+            throw new BusinessException("GitHub authentication failed.");
         }
 
-        var token = jwtTokenGenerator.GenerateToken(authConfiguration.Username);
-        return Task.FromResult(token);
+        return jwtTokenGenerator.GenerateToken(githubLogin);
     }
 }

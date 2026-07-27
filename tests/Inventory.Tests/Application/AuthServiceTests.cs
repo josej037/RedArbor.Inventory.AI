@@ -9,19 +9,29 @@ namespace Inventory.Tests.Application;
 
 public class AuthServiceTests
 {
-    private readonly Mock<IAuthConfiguration> _authConfiguration = new();
+    private readonly Mock<IGitHubOAuthClient> _gitHubOAuthClient = new();
     private readonly Mock<IJwtTokenGenerator> _jwtTokenGenerator = new();
     private readonly AuthService _sut;
 
     public AuthServiceTests()
     {
-        _authConfiguration.SetupGet(x => x.Username).Returns("demo");
-        _authConfiguration.SetupGet(x => x.Password).Returns("Demo123!");
-        _sut = new AuthService(_authConfiguration.Object, _jwtTokenGenerator.Object);
+        _sut = new AuthService(_gitHubOAuthClient.Object, _jwtTokenGenerator.Object);
     }
 
     [Fact]
-    public async Task LoginAsync_returns_token_when_credentials_match()
+    public async Task GetAuthorizationUrlAsync_returns_url_from_github_client()
+    {
+        _gitHubOAuthClient
+            .Setup(x => x.CreateAuthorizationUrl())
+            .Returns("https://github.com/login/oauth/authorize?client_id=abc");
+
+        var result = await _sut.GetAuthorizationUrlAsync();
+
+        result.Should().Be("https://github.com/login/oauth/authorize?client_id=abc");
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_returns_token_when_github_authentication_succeeds()
     {
         var expected = new TokenResponse
         {
@@ -30,44 +40,42 @@ public class AuthServiceTests
             ExpiresInMinutes = 60
         };
 
+        _gitHubOAuthClient
+            .Setup(x => x.AuthenticateAsync("valid-code", "valid-state", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("octocat");
         _jwtTokenGenerator
-            .Setup(x => x.GenerateToken("demo"))
+            .Setup(x => x.GenerateToken("octocat"))
             .Returns(expected);
 
-        var result = await _sut.LoginAsync(new LoginRequest
-        {
-            Username = "demo",
-            Password = "Demo123!"
-        });
+        var result = await _sut.CompleteLoginAsync("valid-code", "valid-state");
 
         result.Should().BeSameAs(expected);
-        _jwtTokenGenerator.Verify(x => x.GenerateToken("demo"), Times.Once);
+        _jwtTokenGenerator.Verify(x => x.GenerateToken("octocat"), Times.Once);
     }
 
     [Fact]
-    public async Task LoginAsync_throws_BusinessException_when_credentials_invalid()
+    public async Task CompleteLoginAsync_throws_BusinessException_when_code_or_state_missing()
     {
-        var act = () => _sut.LoginAsync(new LoginRequest
-        {
-            Username = "demo",
-            Password = "wrong"
-        });
+        var act = () => _sut.CompleteLoginAsync(" ", "state");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .WithMessage("Invalid username or password.");
+            .WithMessage("Authorization code and state are required.");
+        _gitHubOAuthClient.Verify(
+            x => x.AuthenticateAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_throws_BusinessException_when_github_authentication_fails()
+    {
+        _gitHubOAuthClient
+            .Setup(x => x.AuthenticateAsync("bad-code", "bad-state", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new BusinessException("Invalid OAuth state."));
+
+        var act = () => _sut.CompleteLoginAsync("bad-code", "bad-state");
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("Invalid OAuth state.");
         _jwtTokenGenerator.Verify(x => x.GenerateToken(It.IsAny<string>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task LoginAsync_throws_BusinessException_when_username_missing()
-    {
-        var act = () => _sut.LoginAsync(new LoginRequest
-        {
-            Username = " ",
-            Password = "Demo123!"
-        });
-
-        await act.Should().ThrowAsync<BusinessException>()
-            .WithMessage("Username and password are required.");
     }
 }

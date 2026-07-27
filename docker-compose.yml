@@ -32,8 +32,9 @@ services:
       Jwt__Audience: ${JWT_AUDIENCE}
       Jwt__Key: ${JWT_KEY}
       Jwt__ExpirationMinutes: ${JWT_EXPIRATION_MINUTES:-60}
-      Auth__Username: ${AUTH_USERNAME}
-      Auth__Password: ${AUTH_PASSWORD}
+      GitHub__ClientId: ${GITHUB_CLIENT_ID}
+      GitHub__ClientSecret: ${GITHUB_CLIENT_SECRET}
+      GitHub__RedirectUri: ${GITHUB_REDIRECT_URI}
     depends_on:
       sqlserver:
         condition: service_healthy
