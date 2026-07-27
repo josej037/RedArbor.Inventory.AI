@@ -16,6 +16,14 @@ public class InventoryMovementRepository(
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<InventoryMovement>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.InventoryMovements
+            .AsNoTracking()
+            .OrderByDescending(x => x.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<InventoryMovement>> GetByProductIdAsync(
         int productId,
         CancellationToken cancellationToken = default)
