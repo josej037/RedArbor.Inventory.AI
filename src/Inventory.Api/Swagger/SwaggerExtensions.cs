@@ -59,6 +59,7 @@ public static class SwaggerExtensions
         app.UseSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "RedArbor Inventory API v1");
+            options.RoutePrefix = string.Empty;
         });
 
         return app;

@@ -56,7 +56,7 @@ Development defaults live in `src/Inventory.Api/appsettings.Development.json`.
    docker compose up --build -d
    ```
 
-3. Open Swagger: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+3. Open Swagger: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
 The `api` service waits until `sqlserver` is healthy, applies pending EF migrations, then runs the demo seeder when Categories/Products are empty. SQL data persists in the `sqlserver_data` volume.
 
@@ -122,3 +122,33 @@ dotnet test
 ```
 
 Unit tests cover Domain entities and Application business rules (xUnit, Moq, FluentAssertions).
+
+---
+
+## AI-Assisted Development
+
+This project was developed with the assistance of AI tools as permitted by the technical assessment.
+
+AI assistance was used as an architectural and productivity aid, including:
+
+- Reviewing and refining the solution architecture.
+- Generating and validating implementation plans before coding.
+- Producing development documentation.
+- Reviewing code against SOLID, Clean Architecture, and project requirements.
+- Suggesting improvements and identifying potential issues during implementation.
+
+To ensure transparency, the complete AI guidance used during development is included in the repository under the `.cursor` directory.
+
+This documentation includes:
+
+- Cursor Rules
+- Cursor Skills
+- Cursor Plans
+
+The implementation, validation, debugging, and final technical decisions were performed and verified throughout the development process.
+
+---
+
+# Author
+
+Technical Test - Candidate: jose
