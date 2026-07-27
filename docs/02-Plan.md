@@ -70,11 +70,11 @@ Every milestone must finish with:
 
 # Milestone 5
 
-## Testing and Deployment
+## Testing and Final Validation
 
-- Implement unit tests using xUnit and Moq.
-- Validate application services.
-- Validate Application Services.
+- Review and complete unit test coverage if necessary.
 - Configure Docker image.
 - Configure Docker Compose.
-- Validate complete application flow.
+- Validate the complete application flow.
+- Perform a final architecture and code quality review.
+- Update the project README.

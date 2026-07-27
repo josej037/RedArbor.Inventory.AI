@@ -84,6 +84,24 @@ public class InventoryEntryServiceTests
     }
 
     [Fact]
+    public async Task DeleteAsync_throws_BusinessException_when_stock_insufficient_to_reverse()
+    {
+        var entry = new InventoryEntry(1, 10) { Id = 8 };
+        var product = new Product(1, "Laptop", 4, 100m) { Id = 1 };
+        _entryRepository
+            .Setup(x => x.GetByIdAsync(8, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entry);
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+
+        var act = () => _sut.DeleteAsync(8);
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("*stock*");
+    }
+
+    [Fact]
     public async Task DeleteAsync_reverses_stock_and_keeps_movement_history()
     {
         var entry = new InventoryEntry(1, 4) { Id = 8 };

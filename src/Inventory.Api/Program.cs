@@ -2,7 +2,9 @@ using Inventory.Api.ExceptionHandling;
 using Inventory.Api.Swagger;
 using Inventory.Application;
 using Inventory.Infrastructure;
+using Inventory.Infrastructure.Persistence;
 using Inventory.Infrastructure.Persistence.Seed;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +24,16 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-await SeedDemoDataAsync(app.Services);
+await MigrateAndSeedAsync(app.Services);
 
 app.Run();
 
-static async Task SeedDemoDataAsync(IServiceProvider services)
+static async Task MigrateAndSeedAsync(IServiceProvider services)
 {
     using var scope = services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var seeder = scope.ServiceProvider.GetRequiredService<DemoDataSeeder>();
     await seeder.SeedAsync();
 }

@@ -8,3 +8,7 @@
 *.suo
 .env
 **/node_modules/
+.cursor/
+docs/
+**/*.md
+

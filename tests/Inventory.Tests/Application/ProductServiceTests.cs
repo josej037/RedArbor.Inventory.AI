@@ -85,6 +85,138 @@ public class ProductServiceTests
     }
 
     [Fact]
+    public async Task UpdateAsync_throws_NotFound_when_category_missing()
+    {
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Product(1, "Laptop", 1, 10m) { Id = 1 });
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(99, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Category?)null);
+
+        var act = () => _sut.UpdateAsync(1, new UpdateProductRequest
+        {
+            CategoryId = 99,
+            Name = "Laptop",
+            Stock = 1,
+            UnitPrice = 10m
+        });
+
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_throws_BusinessException_when_name_empty()
+    {
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Product(1, "Laptop", 1, 10m) { Id = 1 });
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Category("Electronics") { Id = 1 });
+
+        var act = () => _sut.UpdateAsync(1, new UpdateProductRequest
+        {
+            CategoryId = 1,
+            Name = "   ",
+            Stock = 1,
+            UnitPrice = 10m
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("*name*");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_throws_BusinessException_when_stock_negative()
+    {
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Product(1, "Laptop", 1, 10m) { Id = 1 });
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Category("Electronics") { Id = 1 });
+
+        var act = () => _sut.UpdateAsync(1, new UpdateProductRequest
+        {
+            CategoryId = 1,
+            Name = "Laptop",
+            Stock = -1,
+            UnitPrice = 10m
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("*stock*");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_throws_BusinessException_when_unit_price_negative()
+    {
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Product(1, "Laptop", 1, 10m) { Id = 1 });
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Category("Electronics") { Id = 1 });
+
+        var act = () => _sut.UpdateAsync(1, new UpdateProductRequest
+        {
+            CategoryId = 1,
+            Name = "Laptop",
+            Stock = 1,
+            UnitPrice = -5m
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("*unit price*");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_updates_existing_product()
+    {
+        var product = new Product(1, "Old", 1, 10m) { Id = 1 };
+        _productRepository
+            .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Category("Tools") { Id = 2 });
+
+        await _sut.UpdateAsync(1, new UpdateProductRequest
+        {
+            CategoryId = 2,
+            Name = "  New Name  ",
+            Description = "Updated",
+            Stock = 8,
+            UnitPrice = 25m
+        });
+
+        _productRepository.Verify(
+            x => x.UpdateAsync(
+                It.Is<Product>(p =>
+                    p.Id == 1 &&
+                    p.CategoryId == 2 &&
+                    p.Name == "New Name" &&
+                    p.Description == "Updated" &&
+                    p.Stock == 8 &&
+                    p.UnitPrice == 25m),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_throws_NotFound_when_product_missing()
+    {
+        _productRepository
+            .Setup(x => x.GetByIdAsync(99, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Product?)null);
+
+        var act = () => _sut.DeleteAsync(99);
+
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
     public async Task DeleteAsync_throws_BusinessException_when_inventory_history_exists()
     {
         _productRepository

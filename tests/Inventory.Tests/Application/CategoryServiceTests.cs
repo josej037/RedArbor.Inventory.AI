@@ -74,6 +74,19 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    public async Task UpdateAsync_throws_BusinessException_when_name_empty()
+    {
+        _categoryRepository
+            .Setup(x => x.GetByIdAsync(2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Category("Old") { Id = 2 });
+
+        var act = () => _sut.UpdateAsync(2, new UpdateCategoryRequest { Name = "   " });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .WithMessage("*name*");
+    }
+
+    [Fact]
     public async Task UpdateAsync_updates_existing_category()
     {
         var category = new Category("Old") { Id = 2 };

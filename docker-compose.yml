@@ -20,5 +20,23 @@ services:
       retries: 10
       start_period: 30s
 
+  api:
+    build: .
+    container_name: inventory-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__InventoryDb: "Server=sqlserver,1433;Database=InventoryDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__Key: ${JWT_KEY}
+      Jwt__ExpirationMinutes: ${JWT_EXPIRATION_MINUTES:-60}
+      Auth__Username: ${AUTH_USERNAME}
+      Auth__Password: ${AUTH_PASSWORD}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
 volumes:
   sqlserver_data:
